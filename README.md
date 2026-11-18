@@ -2,7 +2,7 @@
 
 Proyecto de Aprendizaje de Máquina de la Universidad de los Andes. Buscamos clasificar reseñas multilingües de productos (español, inglés, portugués, francés y mezclas español-inglés con *code-switching*) como `positivo`, `negativo` o `neutral`, utilizando arquitecturas de aprendizaje profundo (*Deep Learning*) y aumento de datos.
 
-**Estado:** dos envíos registrados y un tercer experimento con aumento implementado, en entrenamiento. La comparación se actualizará con sus resultados; todavía no es la entrega final completa.
+**Estado:** dos envíos públicos confirmados (`0.70923` y `0.85707`) y tercer experimento con aumento completado en GPU Tesla T4 (`88,35 %` validación, `submission_03` listo para subir a Kaggle). Todavía faltan al menos dos envíos adicionales para completar los cinco requeridos.
 
 <img width="399" height="498" alt="siseveeen" src="https://github.com/user-attachments/assets/777ef828-c3f6-41fc-8430-8fa648003116" />
 
@@ -33,6 +33,7 @@ El idioma se estima localmente con langid y heurísticas de mezcla; no son anota
 |---|---|---:|---:|---:|
 | 1. MiniLM congelado + MLP | Sin aumento | 72,27 % | 73,78 % | 0.70923 |
 | 2 corregido. Fine-tuning MiniLM + cabeza lineal | Sin aumento | **88,76 %** | **89,62 %** | **0.85707** |
+| 3. MiniLM + sustitución léxica controlada | Con aumento | 88,35 % | 89,26 % | Pendiente |
 
 El primer modelo identificaba bien neutral, pero tenía dificultades con positivo y negativo. El segundo modifica el encoder, la cabeza y la normalización: la comparación respalda esa configuración completa, no aísla el efecto de descongelar.
 
@@ -70,6 +71,7 @@ La implementación original del segundo intento obtuvo 88,59 % de validación. S
 
 - `submissions/submission_01_minilm_mlp_sin_aumento.csv`: público registrado **0.70923**.
 - `submissions/submission_02_minilm_finetuning_sin_aumento.csv`: **0.85707 público**, reportado tras subir el CSV corregido. Es el mejor envío público registrado.
+- `submissions/submission_03_minilm_finetuning_con_aumento.csv`: **pendiente de subir a Kaggle** (entrenado finalmente con las 20.466 reseñas durante 2 épocas).
 
 Los CSV contienen 6.781 filas con columnas `id,answer`. Generarlos no los sube a Kaggle ni cuenta como participación. El modelo 2 se reentrenó con todas las etiquetas solo después de cerrar la evaluación; sus métricas corresponden al ajuste de desarrollo, no a una nueva evaluación del artefacto final.
 
@@ -93,22 +95,21 @@ Guardar los `.pt` junto al notebook. No se descargan con `git clone` y no hace f
 
 Se mantiene MiniLM, la partición y los hiperparámetros del modelo 2. Se preparan variantes léxicas de 11.853 de las 16.373 reseñas de entrenamiento, con reglas propias en cuatro idiomas. Cada época usa una variante con probabilidad 0,30 cuando existe: no se duplican filas y se mantienen 512 actualizaciones por época.
 
-La validación conserva sus textos originales y eval solo se usa para inferencia. Se comprobaron negaciones, conectores y números, cambios visibles en el tokenizador y posibles colisiones de etiqueta dentro del entrenamiento. El notebook muestra ejemplos y limitaciones. Entrenamiento y score del tercer intento: pendientes.
+La validación conserva sus textos originales y eval solo se usa para inferencia. Se comprobaron negaciones, conectores y números, cambios visibles en el tokenizador y posibles colisiones de etiqueta dentro del entrenamiento. El notebook muestra ejemplos y limitaciones.
 
-Las definiciones del modelo 2 se separaron de su ajuste para poder reutilizarlas sin repetirlo. Una prueba pequeña verificó que la reorganización conserva pesos y métricas cuando no hay aumento. Antes del tercer intento se liberan los modelos anteriores de memoria.
+En validación (4.093 reseñas) obtuvo **88,35 % de accuracy** (`-0,415 pp` frente al `88,76 %` del modelo 2 sin aumento), **89,26 % de F1 macro** y pérdida de validación **0.2296** en la época 2 (detención en época 4), con una brecha entrenamiento–validación de **4,79 pp** (`93,14 %` entrenamiento). Por idioma: español `90,30 %`, inglés `86,17 %`, portugués `86,58 %` (`+0,43 pp`), francés `80,19 %`, mezcla es/en probable `81,82 %`, otra mezcla `86,67 %` e incierto `100,00 %`. La conclusión es que las sustituciones léxicas simples no mejoraron el accuracy global frente al modelo 2, pues la dificultad principal sigue estando en reseñas mixtas, negaciones e ironía.
 
-### Reducir el tiempo de entrenamiento
+Las definiciones del modelo 2 se separaron de su ajuste para poder reutilizarlas sin repetirlo. Antes del tercer intento se liberan los modelos anteriores de memoria.
 
-El tercer CSV reutiliza el mejor checkpoint de desarrollo, entrenado con 16.373 reseñas. Se omite el segundo entrenamiento con todo train. Esto ahorra un ajuste completo, a cambio de usar menos ejemplos que el modelo 2 final. La comparación local conserva la misma partición y protocolo; una diferencia en Kaggle también podrá deberse a ese distinto tamaño de entrenamiento.
+### Reentrenamiento final y caché local
 
-Con `REENTRENAR_03 = False`, las celdas del tercer modelo recargan un paquete compatible ya guardado. Comprueban datos, particiones, configuración y reglas antes de reutilizarlo. Para volver a ajustar sus pesos se cambia a `True`. Para ejecutar solo el intento 3, seguir la secuencia indicada en el notebook y omitir los ajustes de los modelos 1 y 2.
+Cerrada la evaluación, se realizó el segundo ajuste final en GPU Tesla T4 con las **20.466 reseñas de `train.csv`** (14.846 variantes aceptadas y 5.620 sin regla) durante `mejor_epoca_03 = 2` épocas, generando `submissions/submission_03_minilm_finetuning_con_aumento.csv` y `modelo_03_minilm_aumento.pt` (692,6 MB), con recarga offline verificada.
 
-Las pérdidas por lote y las predicciones se acumulan en el dispositivo y se copian al final. Se reducen las transferencias y sincronizaciones entre GPU y CPU sin cambiar las etiquetas, los lotes ni las actualizaciones del optimizador.
+Con `REENTRENAR_03 = False`, las celdas del tercer modelo recargan el paquete guardado si está en la raíz sin repetir el ajuste. Comprueban datos, particiones, configuración y reglas antes de reutilizarlo. Para volver a ajustar sus pesos se cambia a `True`.
 
 ## Pendientes de la rúbrica
 
-- Implementar los siguientes experimentos: hay dos envíos distintos registrados; faltan al menos tres más.
-- Completar la ejecución y el análisis del tercer intento con aumento, sobre la misma configuración y validación fija.
-- Revisar errores por idioma antes y después del aumento.
+- Subir `submission_03_minilm_finetuning_con_aumento.csv` a Kaggle y registrar su score público.
+- Implementar los siguientes experimentos: faltan al menos dos envíos más distintos para llegar a cinco.
 - Confirmar la línea base oficial y superarla en el leaderboard privado; el accuracy local y el score público no lo demuestran.
 - Completar códigos y aportes reales de los integrantes.
