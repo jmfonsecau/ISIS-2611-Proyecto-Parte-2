@@ -1,74 +1,62 @@
-# Referencias y Declaración de Uso de Recursos Externos — Proyecto Parte 2
+# Referencias y uso de recursos externos - Parte 2
 
-## 1. Modelos Preentrenados y Licencias
+## Modelo preentrenado
 
-- **`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`**
-  - **Autores / Organización:** Nils Reimers y Iryna Gurevych (UKP Lab, TU Darmstadt) / Sentence-Transformers.
-  - **Enlace:** https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-  - **Revisión fijada:** `e8f8c211226b894fcb81acc59f3b34ba3efd5f42`.
-  - **Licencia:** Apache License 2.0.
-  - **Uso en el proyecto:** Base multilingüe utilizada tanto en el Modelo 1 (representaciones congeladas de 384 dimensiones + MLP) como en el Modelo 2 (*fine-tuning* conjunto de encoder + cabeza lineal mediante `AutoModel`, `AutoTokenizer` y `get_linear_schedule_with_warmup`), empaquetados localmente para inferencia sin conexión.
-  - **Documentación de fine-tuning consultada:** https://huggingface.co/docs/transformers/main/en/training
-  - **Publicación asociada:** Reimers, N., & Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*. En Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP). https://arxiv.org/abs/1908.10084
+- Base: [sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2).
+- Organización: Sentence-Transformers / UKP Lab. Autores asociados: Nils Reimers e Iryna Gurevych.
+- Revisión: `e8f8c211226b894fcb81acc59f3b34ba3efd5f42`.
+- Licencia: **Apache-2.0**. Se incluye su texto en `LICENSE_MODELOS_APACHE-2.0.txt` y en las versiones de descarga.
+- Uso: encoder congelado con MLP en el modelo 1; encoder ajustado y cabeza lineal en los modelos 2 y 3. Los paquetes contienen los pesos y el tokenizador.
+- Publicación: Reimers y Gurevych (2019), [Sentence-BERT](https://arxiv.org/abs/1908.10084).
 
-## 2. Librerías de Software y Herramientas
+## Aumento de datos
 
-- **PyTorch (`torch 2.9.1`):** Entrenamiento e inferencia de redes neuronales profundas (MLP, funciones de pérdida, optimizador `AdamW`, aceleración MPS en Apple Silicon). Licencia BSD-3-Clause. https://pytorch.org/
-- **Hugging Face Transformers (`transformers 4.57.3`) y Sentence-Transformers (`sentence-transformers 5.1.2`):** Carga de tokenizadores y modelos transformer multilingües. Licencia Apache 2.0. https://huggingface.co/docs/transformers/
-- **langid (`langid 1.1.6`):** Identificación local de idioma (`es`, `en`, `pt`, `fr`) sin llamadas a servicios externos para análisis exploratorio, partición estratificada y desglose de métricas por idioma. Autor: Marco Lui y Timothy Baldwin. Licencia BSD-2-Clause. https://github.com/saffsd/langid.py
-- **scikit-learn (`scikit-learn`):** Partición estratificada por grupos (`StratifiedGroupKFold`) y cálculo de métricas (`accuracy_score`, `f1_score`, `classification_report`, `confusion_matrix`). Licencia BSD-3-Clause. https://scikit-learn.org/
-- **NumPy, pandas y Matplotlib:** Manipulación de datos tabulares y visualización de curvas de entrenamiento y matrices de confusión.
+Inspiración: Wei y Zou (2019), [EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks](https://aclanthology.org/D19-1670/). Adaptamos la idea de sustitución léxica; no reutilizamos su código ni WordNet ni implementamos sus cuatro operaciones.
 
-## 3. Declaración de Uso de Inteligencia Artificial Generativa
+Las listas de equivalencias son propias, redactadas con asistencia de IA y revisadas en ejemplos de entrenamiento. Se cambia como máximo una expresión, con semilla 42 y probabilidad 0,30 por reseña elegible y época. Se rechazan cambios invisibles para el tokenizador y colisiones con otra etiqueta en entrenamiento. Conservar negaciones y números no prueba equivalencia semántica en todos los casos.
 
-- Se utilizó asistencia de IA generativa como apoyo de programación para estructurar el código de exploración, configurar la partición reproducible con comprobaciones de grupos y posibles cruces, implementar el entrenamiento en PyTorch, verificar la recarga offline del modelo empaquetado y redactar documentación técnica.
-- **No se utilizó IA generativa para etiquetar directamente las reseñas de `eval.csv`.** Todas las predicciones enviadas a Kaggle provienen exclusivamente de la inferencia de los modelos entrenados en el notebook sobre los datos de entrenamiento.
+No se añadieron corpus externos ni se usaron APIs para generar o etiquetar reseñas. Las variantes de desarrollo heredan la partición de su original. Las variantes de todo train se construyen únicamente después de cerrar la evaluación.
 
+## Entornos usados
 
-## 4. Corrección y reproducción del Modelo 2
+La tabla distingue la referencia sin aumento de la ejecución que produjo el tercer CSV. Las versiones de una sesión de recarga no reemplazan este registro histórico.
 
-Se corrigieron la inferencia dependiente de globals, la ponderación de los
-últimos microlotes y el calendario del ajuste final. La parada y recuperación
-se documentan como eventos distintos. El paquete registra versiones de Python
-y librerías, configuración, horizonte, revisión y huellas de los datos y de
-particiones. Se probó también la recarga por defecto en CPU sin conexión.
+| Componente | Modelo 2: MPS local | Modelo 3: T4 en Colab |
+|---|---|---|
+| Python | 3.12.13 | 3.13.16 |
+| PyTorch | 2.9.1 | 2.14.1+cu130 |
+| Transformers | 4.57.3 | 4.57.3 |
+| Sentence-Transformers | 5.1.2 | 5.1.2 |
+| NumPy | 2.5.5 | 2.4.6 |
+| pandas | 3.1.1 | 2.2.3 |
+| scikit-learn | 1.9.1 | 1.6.1 |
 
-El horizonte de warmup/decaimiento es de seis épocas, aunque se ejecuten solo
-las seleccionadas; no implica que el ajuste con todo train tenga las mismas
-actualizaciones que el de desarrollo. Las métricas reportadas son las de
-validación de la configuración corregida, no una evaluación del modelo que
-aprendió con todas las etiquetas.
+La detección de idioma usa **langid 1.1.6**, localmente. Los grupos y la separación originales se construyeron con scikit-learn 1.9.1 y SciPy 1.18.1. El paquete del tercer modelo no registró la versión de SciPy: no la inventamos. La ejecución normal carga la partición publicada y comprueba su huella; no necesita reconstruirla con otra versión.
 
-La comparación frente al primer modelo cambia cabeza y normalización además
-del entrenamiento del encoder; no constituye una ablación de un único factor.
-Se usó IA como apoyo para revisar, corregir, probar y documentar estas decisiones.
-No se usó IA generativa para etiquetar eval ni se entrenó con eval. El aumento se implementó en el modelo 3; su ejecución y comparación siguen en curso. Los originales del segundo intento quedaron respaldados
-fuera del repositorio antes de reemplazar el artefacto local.
+La preparación de Colab alinea las dependencias registradas del tercer experimento. `REPRODUCIR_ENTORNO_03=True` solicita también PyTorch 2.14.1 y exige Python 3.13; se debe comprobar el build CUDA `+cu130`. Para inferencia pueden usarse otros entornos compatibles comprobando las predicciones contra el CSV. PyTorch [no garantiza igualdad entre plataformas y versiones](https://docs.pytorch.org/docs/2.9/notes/randomness.html), incluso con la misma semilla.
 
-### Versiones de la ejecución corregida
+La comparación M2/M3 es descriptiva: cambia el aumento, pero también el dispositivo y parte del software. El notebook prepara una repetición de ambos casos en una misma GPU. Esa repetición no se ha ejecutado ni se atribuyen a ella los resultados publicados.
 
-- torch: 2.9.1
-- transformers: 4.57.3
-- sentence-transformers: 5.1.2
-- numpy: 2.5.5
-- pandas: 3.1.1
-- scikit-learn: 1.9.1
-- Python: 3.12.13
+## Librerías y licencias
 
-Se corrigió también el falso rechazo de particiones por diferencias int32/int64. Se verificaron valores idénticos y se conserva el CSV original byte a byte.
+- [PyTorch](https://pytorch.org/): redes, pérdida, AdamW e inferencia. BSD-3-Clause.
+- [Transformers](https://huggingface.co/docs/transformers/) y [Sentence-Transformers](https://www.sbert.net/): encoder y tokenizador. Apache-2.0.
+- [langid](https://github.com/saffsd/langid.py): idioma estimado para exploración, partición y métricas por subgrupo. BSD-2-Clause; Marco Lui y Timothy Baldwin.
+- [scikit-learn](https://scikit-learn.org/): agrupación, separación y métricas. BSD-3-Clause.
+- NumPy, pandas, SciPy y Matplotlib: datos, operaciones numéricas y figuras.
 
-## Distribución de los paquetes
+## Partición y modelo entregado
 
-Los modelos entrenados se comparten como adjuntos de GitHub Releases. [MODELOS.md](MODELOS.md) registra enlaces, procedencia, revisión, modificaciones y huellas SHA-256. Se acompaña el texto de [Apache-2.0](LICENSE_MODELOS_APACHE-2.0.txt) correspondiente al modelo preentrenado.
+Se mantiene la separación de **16.373 reseñas de entrenamiento y 4.093 de validación**. Las etiquetas de validación no actualizan pesos durante el desarrollo. La selección por pérdida recuperó la época 2 tras observar cuatro épocas. Se guardaron sus predicciones de validación por identificador.
 
-## Aumento del modelo 3
+Después se inicializó otro modelo desde los pesos públicos y se entrenó con **las 20.466 reseñas**, con aumento, durante **dos épocas**. Conservó el horizonte de seis épocas para warmup y decaimiento. Hubo 512 actualizaciones por época en desarrollo y 640 en el ajuste final. No se evaluó este modelo final sobre la validación que ya había aprendido.
 
-Inspiración: Wei, J. y Zou, K. (2019). *EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks*. EMNLP-IJCNLP, 6382–6388. https://aclanthology.org/D19-1670/ . Se adapta únicamente la idea de sustitución léxica: no se reutiliza su código ni WordNet ni se implementan las cuatro operaciones originales.
+`modelo_03_minilm_aumento.pt` contiene ese modelo final, con `entrenado_con_todo_train=True`, su configuración, versiones, huellas, historiales y las predicciones de desarrollo. En modo de recarga se muestran esas métricas históricas, no métricas artificialmente obtenidas con los pesos finales. El CSV correspondiente obtuvo **0.85903 público**, reportado por el grupo.
 
-Las listas de equivalencias en español, inglés, portugués y francés son reglas propias, redactadas con asistencia de IA y revisadas en ejemplos de entrenamiento. No se incorporan corpus externos ni se llama a una API para generar o etiquetar reseñas. Se cambia como máximo una expresión por variante, con semilla 42 y probabilidad de uso 0,30 por época. Los controles y sus límites se documentan en el notebook; conservar negaciones y números no garantiza equivalencia semántica en todos los contextos.
+Las correcciones previas del modelo 2 preservan la ponderación por ejemplos en la acumulación de gradientes, el horizonte del calendario y la recarga sin depender de un dispositivo global. Los tres paquetes se comparten mediante GitHub Releases, con enlaces y huellas en `MODELOS.md`.
 
-La arquitectura, las tasas de aprendizaje, la partición, el tamaño efectivo de lote y el calendario se mantienen frente al modelo 2. El aumento no añade actualizaciones por época. El modelo final se inicializa desde la revisión pública fijada; no se continúa desde el modelo 2 final, que ya aprendió con todas las etiquetas.
+## Uso de IA generativa
 
-### Protocolo de exportación del tercer intento
+Se utilizó IA como apoyo para organizar y depurar el código, revisar el entrenamiento y las reglas de aumento, comprobar la recarga y redactar documentación. El grupo debe entender y sustentar esas decisiones.
 
-Por tiempo de cómputo, el modelo 3 conserva el checkpoint seleccionado en desarrollo y no se reentrena con todo train. Las métricas locales y el CSV corresponden a esos pesos. El paquete registra las 16.373 filas usadas para entrenar, la partición y la época seleccionada. El modelo 2 público sí usó todas las etiquetas: no se atribuirá exclusivamente al aumento una futura diferencia pública entre ambos.
+No se usó IA generativa para etiquetar `eval.csv`. Las predicciones de Kaggle provienen de los modelos guardados. No se entrenó con eval ni se utilizaron sus etiquetas.
