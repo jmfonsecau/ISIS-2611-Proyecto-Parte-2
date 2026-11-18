@@ -2,7 +2,7 @@
 
 Proyecto de Aprendizaje de Máquina de la Universidad de los Andes. Buscamos clasificar reseñas multilingües de productos (español, inglés, portugués, francés y mezclas español-inglés con *code-switching*) como `positivo`, `negativo` o `neutral`, utilizando arquitecturas de aprendizaje profundo (*Deep Learning*) y aumento de datos.
 
-**Estado:** avance con dos modelos sin aumento; todavía no es una entrega final completa. Falta implementar aumento y comparar su efecto, requisito técnico obligatorio.
+**Estado:** dos envíos registrados y un tercer experimento con aumento implementado, en entrenamiento. La comparación se actualizará con sus resultados; todavía no es la entrega final completa.
 
 <img width="399" height="498" alt="siseveeen" src="https://github.com/user-attachments/assets/777ef828-c3f6-41fc-8430-8fa648003116" />
 
@@ -89,10 +89,26 @@ Los dos paquetes entrenados están en [GitHub Releases](https://github.com/jmfon
 
 Guardar los `.pt` junto al notebook. No se descargan con `git clone` y no hace falta Git LFS. Ver [MODELOS.md](MODELOS.md) para tamaños, huellas y licencia. La descarga permite reutilizar los pesos sin repetir el entrenamiento; antes hay que ejecutar los imports y las definiciones de carga del notebook.
 
+## Tercer experimento: aumento controlado
+
+Se mantiene MiniLM, la partición y los hiperparámetros del modelo 2. Se preparan variantes léxicas de 11.853 de las 16.373 reseñas de entrenamiento, con reglas propias en cuatro idiomas. Cada época usa una variante con probabilidad 0,30 cuando existe: no se duplican filas y se mantienen 512 actualizaciones por época.
+
+La validación conserva sus textos originales y eval solo se usa para inferencia. Se comprobaron negaciones, conectores y números, cambios visibles en el tokenizador y posibles colisiones de etiqueta dentro del entrenamiento. El notebook muestra ejemplos y limitaciones. Entrenamiento y score del tercer intento: pendientes.
+
+Las definiciones del modelo 2 se separaron de su ajuste para poder reutilizarlas sin repetirlo. Una prueba pequeña verificó que la reorganización conserva pesos y métricas cuando no hay aumento. Antes del tercer intento se liberan los modelos anteriores de memoria.
+
+### Reducir el tiempo de entrenamiento
+
+El tercer CSV reutiliza el mejor checkpoint de desarrollo, entrenado con 16.373 reseñas. Se omite el segundo entrenamiento con todo train. Esto ahorra un ajuste completo, a cambio de usar menos ejemplos que el modelo 2 final. La comparación local conserva la misma partición y protocolo; una diferencia en Kaggle también podrá deberse a ese distinto tamaño de entrenamiento.
+
+Con `REENTRENAR_03 = False`, las celdas del tercer modelo recargan un paquete compatible ya guardado. Comprueban datos, particiones, configuración y reglas antes de reutilizarlo. Para volver a ajustar sus pesos se cambia a `True`. Para ejecutar solo el intento 3, seguir la secuencia indicada en el notebook y omitir los ajustes de los modelos 1 y 2.
+
+Las pérdidas por lote y las predicciones se acumulan en el dispositivo y se copian al final. Se reducen las transferencias y sincronizaciones entre GPU y CPU sin cambiar las etiquetas, los lotes ni las actualizaciones del optimizador.
+
 ## Pendientes de la rúbrica
 
 - Implementar los siguientes experimentos: hay dos envíos distintos registrados; faltan al menos tres más.
-- Comparar con y sin aumento sobre la misma configuración corregida y validación fija.
+- Completar la ejecución y el análisis del tercer intento con aumento, sobre la misma configuración y validación fija.
 - Revisar errores por idioma antes y después del aumento.
 - Confirmar la línea base oficial y superarla en el leaderboard privado; el accuracy local y el score público no lo demuestran.
 - Completar códigos y aportes reales de los integrantes.

@@ -42,8 +42,7 @@ aprendió con todas las etiquetas.
 La comparación frente al primer modelo cambia cabeza y normalización además
 del entrenamiento del encoder; no constituye una ablación de un único factor.
 Se usó IA como apoyo para revisar, corregir, probar y documentar estas decisiones.
-No se usó IA generativa para etiquetar eval ni se entrenó con eval. El aumento
-sigue pendiente. Los originales del segundo intento quedaron respaldados
+No se usó IA generativa para etiquetar eval ni se entrenó con eval. El aumento se implementó en el modelo 3; su ejecución y comparación siguen en curso. Los originales del segundo intento quedaron respaldados
 fuera del repositorio antes de reemplazar el artefacto local.
 
 ### Versiones de la ejecución corregida
@@ -61,3 +60,15 @@ Se corrigió también el falso rechazo de particiones por diferencias int32/int6
 ## Distribución de los paquetes
 
 Los modelos entrenados se comparten como adjuntos de GitHub Releases. [MODELOS.md](MODELOS.md) registra enlaces, procedencia, revisión, modificaciones y huellas SHA-256. Se acompaña el texto de [Apache-2.0](LICENSE_MODELOS_APACHE-2.0.txt) correspondiente al modelo preentrenado.
+
+## Aumento del modelo 3
+
+Inspiración: Wei, J. y Zou, K. (2019). *EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks*. EMNLP-IJCNLP, 6382–6388. https://aclanthology.org/D19-1670/ . Se adapta únicamente la idea de sustitución léxica: no se reutiliza su código ni WordNet ni se implementan las cuatro operaciones originales.
+
+Las listas de equivalencias en español, inglés, portugués y francés son reglas propias, redactadas con asistencia de IA y revisadas en ejemplos de entrenamiento. No se incorporan corpus externos ni se llama a una API para generar o etiquetar reseñas. Se cambia como máximo una expresión por variante, con semilla 42 y probabilidad de uso 0,30 por época. Los controles y sus límites se documentan en el notebook; conservar negaciones y números no garantiza equivalencia semántica en todos los contextos.
+
+La arquitectura, las tasas de aprendizaje, la partición, el tamaño efectivo de lote y el calendario se mantienen frente al modelo 2. El aumento no añade actualizaciones por época. El modelo final se inicializa desde la revisión pública fijada; no se continúa desde el modelo 2 final, que ya aprendió con todas las etiquetas.
+
+### Protocolo de exportación del tercer intento
+
+Por tiempo de cómputo, el modelo 3 conserva el checkpoint seleccionado en desarrollo y no se reentrena con todo train. Las métricas locales y el CSV corresponden a esos pesos. El paquete registra las 16.373 filas usadas para entrenar, la partición y la época seleccionada. El modelo 2 público sí usó todas las etiquetas: no se atribuirá exclusivamente al aumento una futura diferencia pública entre ambos.
