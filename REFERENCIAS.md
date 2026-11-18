@@ -57,3 +57,7 @@ fuera del repositorio antes de reemplazar el artefacto local.
 - Python: 3.12.13
 
 Se corrigió también el falso rechazo de particiones por diferencias int32/int64. Se verificaron valores idénticos y se conserva el CSV original byte a byte.
+
+## Distribución de los paquetes
+
+Los modelos entrenados se comparten como adjuntos de GitHub Releases. [MODELOS.md](MODELOS.md) registra enlaces, procedencia, revisión, modificaciones y huellas SHA-256. Se acompaña el texto de [Apache-2.0](LICENSE_MODELOS_APACHE-2.0.txt) correspondiente al modelo preentrenado.

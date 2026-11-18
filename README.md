@@ -77,8 +77,17 @@ Los CSV contienen 6.781 filas con columnas `id,answer`. Generarlos no los sube a
 
 1. Usar el kernel de `.venv` con las versiones registradas en las salidas del notebook. Instalar las dependencias y descargar la revisión pública del encoder si no está en caché. La recarga del paquete ya exportado no necesita Internet.
 2. Ejecutar el notebook en orden con los tres CSV y `particiones.csv` en la raíz. No se deben cambiar las particiones para buscar mejores resultados.
-3. `modelo_01_multilingue.pt` y `modelo_02_finetuning.pt` incluyen pesos y archivos del tokenizador. Son archivos grandes excluidos por `.gitignore`; no añadirlos a Git normal. Para recargar el segundo, ejecutar antes los imports y las definiciones de `DatasetResenas02`, `collate_02`, `ClasificadorMiniLM02`, `predecir_probas_02` y `cargar_modelo_02`, sin repetir los ajustes.
+3. `modelo_01_multilingue.pt` y `modelo_02_finetuning.pt` incluyen pesos y archivos del tokenizador. Se descargan desde [GitHub Releases](MODELOS.md) y se guardan en la raíz del proyecto. Por su tamaño siguen excluidos por `.gitignore`. Para recargar el segundo, ejecutar antes los imports y las definiciones de `DatasetResenas02`, `collate_02`, `ClasificadorMiniLM02`, `predecir_probas_02` y `cargar_modelo_02`, sin repetir los ajustes.
 4. `cargar_modelo_02(ruta)` devuelve tokenizador, modelo CPU y metadatos; `predecir_probas_02(modelo, secuencias, tokenizador)` usa ese mismo tokenizador y el dispositivo del modelo. Solo cargar paquetes de confianza.
+
+## Descargar los modelos
+
+Los dos paquetes entrenados están en [GitHub Releases](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/tag/modelos-parte2-20261118):
+
+- [Descargar modelo 1: MiniLM congelado + MLP](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelos-parte2-20261118/modelo_01_multilingue.pt).
+- [Descargar modelo 2: MiniLM con fine-tuning](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelos-parte2-20261118/modelo_02_finetuning.pt).
+
+Guardar los `.pt` junto al notebook. No se descargan con `git clone` y no hace falta Git LFS. Ver [MODELOS.md](MODELOS.md) para tamaños, huellas y licencia. La descarga permite reutilizar los pesos sin repetir el entrenamiento; antes hay que ejecutar los imports y las definiciones de carga del notebook.
 
 ## Pendientes de la rúbrica
 
