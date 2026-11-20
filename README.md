@@ -1,6 +1,6 @@
 # Proyecto ML - Parte 2
 
-Proyecto de Aprendizaje de Máquina de la Universidad de los Andes. Buscamos clasificar reseñas multilingües como `positivo`, `negativo` o `neutral`, usando redes profundas, transferencia de aprendizaje y aumento de datos.
+Clasificamos reseñas multilingües como `negativo`, `neutral` o `positivo`, usando redes profundas, transferencia de aprendizaje y aumento de datos. Conservamos una sección completa por intento: planteamiento, configuración, entrenamiento, evaluación, submission y comparación.
 
 <img width="399" height="498" alt="siseveeen" src="https://github.com/user-attachments/assets/777ef828-c3f6-41fc-8430-8fa648003116" />
 
@@ -14,63 +14,69 @@ Proyecto de Aprendizaje de Máquina de la Universidad de los Andes. Buscamos cla
 
 | Archivo | Contenido |
 |---|---|
-| `notebook_parte2.ipynb` | Exploración, entrenamiento, evaluación y documentación de los experimentos. Todo el código está aquí. |
-| `train.csv` | 20.466 reseñas con `id`, `text` y `label`. |
-| `eval.csv` | 6.781 reseñas sin etiqueta para generar las predicciones de Kaggle. |
-| `sample_submission.csv` | Plantilla del envío: `id,answer`. |
-| `particiones.csv` | Separación fija de 16.373 ejemplos de entrenamiento y 4.093 de validación. |
-| `REFERENCIAS.md` | Fuentes, licencias, entornos usados y declaración de uso de IA. |
-| `MODELOS.md` | Descarga de los paquetes entrenados y sus huellas. |
+| `notebook_parte2.ipynb` | Versión ejecutada en Colab: seis intentos, tablas, gráficas y conclusiones. Todo el código está aquí. |
+| `train.csv`, `eval.csv`, `sample_submission.csv` | Datos originales: 20.466 reseñas etiquetadas y 6.781 de evaluación. |
+| `particiones.csv` | Partición fija de 16.373 reseñas para desarrollo y 4.093 para validar. |
+| `datos_sha256.json` | Huellas de los datos y de la partición. |
+| `resultados_v1_01.json` a `resultados_v1_06.json` | Métricas, historiales y predicciones de validación por ID. |
+| `submissions/` | CSV históricos y los seis CSV generados en Colab. |
+| `REFERENCIAS.md` y archivos `LICENSE_*.txt` | Bases preentrenadas, revisiones, licencias y uso de IA. |
+| `MODELOS.md` | Ubicación de los paquetes pesados, que se comparten por separado. |
 
-## Proceso y resultados actuales
+## Abrir sin ejecutar
 
-Revisamos nulos, textos vacíos, duplicados, clases, longitudes e idiomas. No eliminamos filas. Conservamos juntos tres pares de reseñas casi idénticas; los idiomas son estimados, no anotaciones oficiales.
+El notebook conserva las salidas guardadas: tablas, gráficas, métricas y mensajes de ejecución. Puede abrirse en GitHub o VS Code sin volver a entrenar. Exportarlo no conserva las variables en RAM ni incluye los pesos de las redes.
 
-La validación se mantiene fija y sin aumento. Se utiliza para elegir la época, por lo que no es una prueba ciega. `eval` solo se usa para inferencia.
+El archivo principal del repo se llama `notebook_parte2.ipynb`; en [Colab](https://colab.research.google.com/drive/1eEPCGXDQBsUhwEDNF9gYGNxx0AmwwR0Z) se llama `notebook_parte2_colab.ipynb`. Esta copia corresponde a la ejecución terminada el 19 de noviembre de 2026, con 39 celdas de código ejecutadas y sin errores.
 
-| Modelo | Aumento | Accuracy validación | F1 macro | Público |
+## Proceso y resultados de Colab
+
+Pasamos del equipo local a una GPU L4 de Colab para reducir tiempos y guardar avances en Drive. La GPU no mejora el score por sí sola ni más épocas garantizan un mejor resultado.
+
+Revisamos nulos, textos vacíos, duplicados, clases, longitudes e idiomas. Conservamos la misma partición, manteniendo juntos los grupos de reseñas similares. Los idiomas son estimados. Validación se usa para elegir configuraciones y épocas; no es una prueba ciega. `eval` solo se usa para inferencia.
+
+| Modelo | Cambio principal | Accuracy validación | F1 macro | Score público |
 |---|---|---:|---:|---:|
-| MiniLM congelado + MLP | Sin aumento | 72,27 % | 73,78 % | 0.70923 |
-| Fine-tuning de MiniLM | Sin aumento | 88,76 % | 89,62 % | 0.85707 |
-| Fine-tuning de MiniLM | Sustitución léxica | 88,35 % | 89,26 % | **0.85903** |
+| 1 | MiniLM fijo + MLP | 73,37 % | 0,7526 | 0.71611 |
+| 2 | Fine-tuning de MiniLM sin aumento | 88,37 % | 0,8923 | 0.86149 |
+| 3 | La misma red con sustitución léxica controlada | 88,39 % | 0,8932 | 0.85265 |
+| 4 | XLM-R base con ajuste por capas | 89,79 % | 0,9057 | 0.87524 |
+| 5 | 90 % XLM-R base + 10 % MiniLM sin aumento | **90,08 %** | **0,9084** | **0.87770** |
+| 6 | XLM-R large, 24 capas y embeddings fijos | 89,79 % | 0,9059 | Pendiente de envío |
 
-Los dos primeros modelos se midieron en MPS. El tercero se ejecutó en T4 con otras versiones. La comparación describe estas ejecuciones; no aísla únicamente el aumento. El notebook incluye un control opcional para repetir ambos casos en una misma GPU, todavía sin resultados publicados.
+La comparación con y sin aumento corresponde a los modelos 2 y 3, con los mismos hiperparámetros y entorno de Colab. La pequeña mejora en validación no se mantuvo en Kaggle. El modelo 5 sigue siendo el mejor envío público confirmado.
 
-## Estado del proyecto
+El modelo 6 alcanzó 90,30 % en su segunda época, pero empeoró la pérdida de validación. El criterio fijado era minimizar esa pérdida: se eligió la primera época. Una red más grande no mejoró el accuracy del modelo seleccionado. Todavía no se ha confirmado un score público de 0.90.
 
-Hay **tres envíos confirmados**. El tercero obtuvo **0.85903**, el mejor score público registrado, y pasa a ser el candidato de entrega. Mejoró 0,196 puntos porcentuales frente al segundo, aunque su accuracy local bajó 0,415 puntos. Esto no garantiza una mejora en la tabla privada.
+## Submissions
 
-La comparación con y sin aumento y el análisis por idioma ya están documentados. Faltan dos envíos diferentes para completar los cinco requeridos.
+| Archivo en `submissions/` | Score público |
+|---|---:|
+| `submission_01_minilm_mlp_sin_aumento_colab.csv` | 0.71611 |
+| `submission_02_minilm_finetuning_sin_aumento_colab.csv` | 0.86149 |
+| `submission_03_minilm_finetuning_con_aumento_colab.csv` | 0.85265 |
+| `submission_04_xlmr_finetuning_por_capas_colab.csv` | 0.87524 |
+| `submission_05_ensemble_xlmr_minilm_colab.csv` | 0.87770 |
+| `submission_06_xlmr_large_colab.csv` | Pendiente de envío |
 
-## Archivos de envío
+Cada archivo tiene 6.781 predicciones con las columnas `id,answer`. Los cuatro primeros se enviaron originalmente como `submission_v1_01.csv` a `submission_v1_04.csv`: sus nombres descriptivos conservan exactamente los mismos bytes. No duplicamos esos alias en el repo. Los scores solo se asocian al CSV cuya huella coincide con el archivo enviado.
 
-- `submissions/submission_01_minilm_mlp_sin_aumento.csv`: público **0.70923**.
-- `submissions/submission_02_minilm_finetuning_sin_aumento.csv`: público **0.85707**.
-- `submissions/submission_03_minilm_finetuning_con_aumento.csv`: público **0.85903**.
+También conservamos los tres CSV anteriores, sin el sufijo `_colab`, como historial. Obtuvieron 0.70923, 0.85707 y 0.85903. Son corridas distintas: sus pesos y scores no se intercambian con los de Colab.
 
-Cada CSV contiene 6.781 filas con `id,answer`. Los scores fueron reportados por el grupo. La tabla del notebook comprueba la huella del CSV antes de asociarle su score: un archivo nuevo no hereda automáticamente el resultado del anterior.
+## Ejecutar en Colab
 
-## Últimos modelos
+1. Abrir el notebook en Colab y seleccionar una GPU. Los entrenamientos actuales se realizaron en L4; otras GPU pueden necesitar ajustar los lotes en un experimento nuevo.
+2. Mantener datos, partición, licencias y resultados en la carpeta de Drive `ISIS-2611-Proyecto-Parte-2-Colab`. Los modelos guardados se colocan en esa misma carpeta; ver [MODELOS.md](MODELOS.md).
+3. Para consultar y recalcular informes desde los registros, dejar `ENTRENAR=False` y `GENERAR_SUBMISSION=False`. La preparación y los informes vuelven a ejecutarse, pero no se entrenan redes ni se exportan CSV.
+4. La copia exportada conserva los controles usados en la última ejecución: ambos están en `True`. Con ellos, Run all recorre cada sección y reutiliza los artefactos compatibles; si falta un modelo o resultado puede iniciar entrenamiento. No ejecutar Run all si solo se quiere leer.
+5. Para experimentar, activar los controles necesarios en Colab. Si se cambian datos o hiperparámetros de un intento existente, usar una nueva `VERSION_CORRIDA` para no mezclar registros. Los resultados nuevos se revisan antes de subir el CSV a Kaggle.
 
-El primero usa MiniLM congelado y entrena una MLP. El segundo ajusta el encoder y una cabeza lineal. El cambio también incluye cabeza y normalización, por lo que no es una prueba aislada de descongelar pesos.
+Los entrenamientos no se ejecutan en el computador local. La configuración comprueba que se esté usando Colab con GPU antes de entrenar o generar un envío.
 
-El tercero mantiene la red y los hiperparámetros del segundo. Cambia como máximo una expresión por reseña elegible, con probabilidad 0,30 por época, usando reglas propias en cuatro idiomas. Hay 11.853 variantes disponibles en desarrollo y 14.846 al usar todo train; no todas se utilizan en cada época. Se conservan negaciones, conectores y números, aunque las equivalencias pueden fallar según el contexto.
+## Guardado, reproducción y entrega
 
-En desarrollo recuperó la época 2 tras detenerse en la 4. Obtuvo 93,14 % en entrenamiento y 88,35 % en validación: una brecha de 4,79 puntos. Mejoró el recall de positivo y redujo el de negativo; no demostró una mejora global local. Los errores sugieren dificultades con opiniones contradictorias, negaciones y mezclas, pero esa hipótesis no está cuantificada por tipo de error.
+La parada temprana elige la época de menor pérdida en desarrollo. Después se inicializa otra red desde la base pública y se ajusta con todo train durante las épocas seleccionadas, conservando el horizonte del calendario. Las métricas de validación mostradas pertenecen al modelo de desarrollo, no a los pesos finales que ya aprendieron todo train.
 
-Cerrada la evaluación, el modelo 3 se volvió a entrenar con las **20.466 reseñas** durante dos épocas, manteniendo un horizonte de seis para el calendario. El CSV proviene de ese modelo final; las métricas locales corresponden al ajuste de desarrollo anterior.
+Los checkpoints conservan pesos, AdamW, calendario, precisión mixta y estados aleatorios. Se recupera la última época completa si coinciden versión, datos, configuración y entorno. Los paquetes finales incluyen encoder, tokenizador, cabeza, licencias y configuración. La recarga se comprobó contra las predicciones de cada CSV.
 
-## Entrega y reproducción
-
-1. Descargar [el paquete del modelo 3](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelo03-parte2-20261118/modelo_03_minilm_aumento.pt) y guardarlo junto al notebook. [MODELOS.md](MODELOS.md) incluye los tres paquetes y sus huellas.
-2. En VS Code usar el entorno local; en Colab ejecutar la preparación inicial. Las versiones originales de MPS y T4 están separadas en [REFERENCIAS.md](REFERENCIAS.md).
-3. Ejecutar las celdas en orden. Por defecto, `Run All` **no entrena ninguna red**: carga la partición publicada, muestra registros anteriores y verifica el tercer CSV con su paquete. Si falta el `.pt`, se detiene y pide descargarlo.
-4. Para repetir los modelos 1 y 2 activar `ENTRENAR_MODELOS_ANTERIORES=True`. Para un tercer ajuste nuevo activar `REENTRENAR_03=True`. Estos cambios son explícitos y pueden actualizar sus artefactos. El control de comparación en una misma GPU también está desactivado por defecto.
-5. La caché verifica semilla, clases, límite de tokens, modelo, revisión, datos, partición, hiperparámetros y aumento. Las métricas históricas se recuperan de sus predicciones de desarrollo, sin evaluar el modelo final sobre ejemplos que ya usó para entrenar.
-6. Entregar el notebook ejecutado, `modelo_03_minilm_aumento.pt` y `REFERENCIAS.md` en Bloque Neón mientras el tercero conserve el mejor score público.
-
-La descarga no instala las dependencias. La recarga del paquete funciona sin Internet una vez instaladas y se comprueba contra el CSV existente. Las descargas del encoder público se limitan a pesos y tokenizador y solo se necesitan para entrenamientos nuevos.
-
-## Pendientes de la rúbrica
-
-Completar dos envíos distintos, confirmar la superación de la línea base y el resultado privado, y registrar los códigos y aportes reales de cada integrante. La repetición controlada en T4 queda como siguiente comprobación; no se presenta como ya ejecutada.
+Los modelos y sus ZIP no se incluyen en Git. Permanecen en Drive; al cerrar los experimentos se preparará el ZIP del modelo elegido. La entrega requiere notebook ejecutado, paquete entrenado y referencias. Quedan pendientes el sexto envío público, la evaluación privada y completar los códigos y aportes reales de los integrantes.

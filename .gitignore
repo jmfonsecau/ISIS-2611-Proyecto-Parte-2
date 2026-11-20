@@ -3,3 +3,16 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 *.pt
+
+# Paquetes de modelos y archivos temporales fuera de Git
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.bin
+*.zip
+*.tar
+*.tar.gz
+*.parcial
+*.tmp
+estado_*.json

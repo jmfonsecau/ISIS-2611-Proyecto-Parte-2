@@ -1,44 +1,42 @@
 # Modelos entrenados
 
-Los modelos 1 y 2 se descargan desde la [versión `modelos-parte2-20261118` de GitHub Releases](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/tag/modelos-parte2-20261118). El modelo 3 se descarga desde [su propia versión](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/tag/modelo03-parte2-20261118). Guardar cada `.pt` en la raíz, junto a `notebook_parte2.ipynb`.
+Los pesos se guardan fuera de Git. El repo contiene el notebook ejecutado, las métricas y los CSV; abrirlo sin ejecutar permite consultar los resultados sin descargar modelos.
 
-| Archivo | Tamaño | Score público registrado |
-|---|---:|---:|
-| [modelo_01_multilingue.pt](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelos-parte2-20261118/modelo_01_multilingue.pt) | 692.66 MiB | 0.70923 |
-| [modelo_02_finetuning.pt](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelos-parte2-20261118/modelo_02_finetuning.pt) | 692.34 MiB | 0.85707 |
-| [modelo_03_minilm_aumento.pt](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelo03-parte2-20261118/modelo_03_minilm_aumento.pt) | 692.61 MiB | **0.85903** |
+## Paquetes actuales de Colab
 
-El primero usa MiniLM congelado y una MLP. El segundo ajusta MiniLM por fine-tuning y usa una cabeza lineal. El tercero añade aumento léxico durante el fine-tuning. Los tres incluyen pesos, tokenizador y configuración. Para reutilizarlos, ejecutar los imports y las definiciones de carga del notebook; no hace falta repetir el entrenamiento.
+Los archivos están en la [carpeta del proyecto en Drive](https://drive.google.com/drive/folders/1IFjsKIHVJsrEsbk5aXiHWeDRJNS7QC3c). No se han subido estos paquetes nuevos a GitHub. Al terminar los experimentos se preparará el ZIP del modelo elegido.
 
-## Verificar la descarga
+| Modelo | Archivo | Score público |
+|---|---|---:|
+| 1 | [modelo_v1_01.pt](https://drive.google.com/file/d/1oxFQVOV2ws2IJBoWBTP_dOJ6itZA1l98/view) | 0.71611 |
+| 2 | [modelo_v1_02.pt](https://drive.google.com/file/d/1AGRm5br27zuDGYZBnXUgr8z9bEfbgxYH/view) | 0.86149 |
+| 3 | [modelo_v1_03.pt](https://drive.google.com/file/d/10Wu27f_JlRCShIqkqIl1QPLU-TH1rbYe/view) | 0.85265 |
+| 4 | [modelo_v1_04.pt](https://drive.google.com/file/d/1e4uGy_wz98trfWTPsXyMaatglu5ma8q5/view) | 0.87524 |
+| 5 | [modelo_v1_05.zip](https://drive.google.com/file/d/12lBUXi1fm-Ns9Dv-1vf-gsd6amQezqsk/view) | 0.87770 |
+| 6 | [modelo_v1_06.pt](https://drive.google.com/file/d/18zbFv6p_EvrMnhLCW9I0TRxVFeYNhBuf/view) | Pendiente de envío |
 
-La versión incluye `SHA256SUMS.txt`. Descargarlo en la misma carpeta y ejecutar:
+Los paquetes `.pt` incluyen encoder, tokenizador, cabeza, configuración, licencias y registros. Se leen mediante `cargar_modelo_completo` después de ejecutar las definiciones y la configuración correspondiente del notebook. La carga usa `weights_only=True` y no descarga pesos base si el paquete ya está disponible.
 
-```bash
-shasum -a 256 -c SHA256SUMS.txt
-```
+El ZIP del modelo 5 contiene las redes finales 4 y 2, sus tokenizadores y el manifiesto con pesos 0,90 y 0,10. `predecir_ensamble_05` comprueba las huellas y combina sus probabilidades. El notebook verificó su recarga sobre las 6.781 predicciones.
 
-Para el tercero descargar [SHA256SUMS_MODELO03.txt](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelo03-parte2-20261118/SHA256SUMS_MODELO03.txt) y ejecutar `shasum -a 256 -c SHA256SUMS_MODELO03.txt`. Los resultados deben ser `OK`. Las huellas corresponden a las versiones publicadas, no a un reentrenamiento posterior. Las huellas son:
+El ZIP que ya existe corresponde únicamente al ensamble 5; no es un archivo con todos los experimentos. El paquete de entrega definitivo se preparará al cerrar el proyecto.
 
-- `modelo_01_multilingue.pt`: `d091019504b78ab27f6fa084b8e97c848443d4e4450b883f352d7b300758f091`
-- `modelo_02_finetuning.pt`: `9ee2c5fc4b6249b91a97f5752f56760e930a63438ff3402ebd02f33c5dc807f9`
+## Reutilizar en Colab
 
-- `modelo_03_minilm_aumento.pt`: `70dccf0b3c06f22af318ed2d58292b1d0e9e0d3fb71cdee135f3c3067d6d7a3c`
+Colocar los paquetes que se quieran reutilizar en la raíz de `ISIS-2611-Proyecto-Parte-2-Colab`, junto con los datos, los seis JSON de resultados, las licencias y la carpeta `submissions/`. El nombre del archivo debe coincidir con la tabla.
 
-## Procedencia
+Para consultar los informes desde los JSON no se necesitan pesos: desactivar `ENTRENAR` y `GENERAR_SUBMISSION`. Para generar predicciones sí se necesitan los paquetes correspondientes. Con generación activada y un paquete ausente, el notebook puede iniciar el ajuste final; no asumir que clonar este repo incluye los modelos.
 
-Base: [sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2), revisión `e8f8c211226b894fcb81acc59f3b34ba3efd5f42`, con licencia Apache-2.0. El equipo añadió una MLP al primer paquete y modificó los pesos del encoder y la cabeza de clasificación en el segundo.
+Los resultados de validación se guardaron antes de entrenar con todo train. El score público se asocia a la huella del CSV, no solo al nombre de la arquitectura. Los modelos y comprimidos quedan excluidos mediante `.gitignore`.
 
-Se incluye el [texto de la licencia del modelo base](LICENSE_MODELOS_APACHE-2.0.txt), también como adjunto de la versión. Este aviso no cambia la licencia del resto del código ni de los datos. Más detalles en [REFERENCIAS.md](REFERENCIAS.md).
+## Versiones anteriores
 
-## Almacenamiento
+Se conservan las publicaciones históricas de los tres primeros intentos. Sus nombres, pesos y scores son diferentes de las nuevas corridas de Colab; no deben usarse como reemplazo de `modelo_v1_01.pt` a `modelo_v1_03.pt`.
 
-Los archivos se publican como adjuntos de una versión y siguen ignorados por Git. No se descargan al clonar y no requieren Git LFS. Se eligió Releases porque GitHub bloqueó la subida LFS por el presupuesto de la cuenta; no se modificó la facturación.
+| Archivo histórico | Score público |
+|---|---:|
+| [modelo_01_multilingue.pt](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelos-parte2-20261118/modelo_01_multilingue.pt) | 0.70923 |
+| [modelo_02_finetuning.pt](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelos-parte2-20261118/modelo_02_finetuning.pt) | 0.85707 |
+| [modelo_03_minilm_aumento.pt](https://github.com/jmfonsecau/ISIS-2611-Proyecto-Parte-2/releases/download/modelo03-parte2-20261118/modelo_03_minilm_aumento.pt) | 0.85903 |
 
-GitHub permite adjuntos de menos de 2 GiB por archivo en [Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases). Los tres paquetes están por debajo de ese límite.
-
-## Tercer modelo y ejecución normal
-
-El paquete del modelo 3 fue entrenado en T4 con las 20.466 reseñas durante dos épocas, después de elegir la época en desarrollo. Es el candidato por su score público 0.85903. Sus métricas locales de 88,35 % de accuracy y 89,26 % de F1 pertenecen a los pesos de desarrollo anteriores al ajuste final.
-
-Para cargarlo se usa `cargar_modelo_02`, compartida por ambas redes MiniLM. La ejecución normal del notebook verifica datos, semilla, configuración y clases, y comprueba sus respuestas contra el CSV existente. No hace falta entrenarlo de nuevo ni descargar el encoder público para recargarlo.
+Las versiones publicadas incluyen sus archivos de huellas. Las referencias y licencias de las bases están en [REFERENCIAS.md](REFERENCIAS.md).

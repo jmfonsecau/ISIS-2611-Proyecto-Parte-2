@@ -1,0 +1,6 @@
+{
+  "train.csv": "23af8502589d7e7f36dcc3d82d7a8e69d7ba8df4b5f2ac8851ab210f0895002c",
+  "eval.csv": "878f7d99f339bbcece5c7c587245a1a0349d787161e4196cdbdfd3eff5543818",
+  "sample_submission.csv": "edfd4e7df22a92dd126192e6428992e9d4c7a8ec42617cb19469491a6bcc4546",
+  "particiones.csv": "6e6d9aad443cf22569aefa0e06609ad7ba64273963b3f3df83d79c4dde506401"
+}
