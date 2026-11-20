@@ -57399,7 +57399,7 @@
     20461,
     20462
   ],
-  "score_publico": null,
+  "score_publico": 0.8831,
   "submission_sha256": "91b4687cc82ea8cbfd7b3c70a359b5da9fdce2c8d1ddbae512d20b28d51aa3d1",
   "entorno_final": {
     "torch": "2.14.1+cu130",
@@ -57427,5 +57427,12 @@
       "horizonte_epocas": 4,
       "segundos": 316.3
     }
-  ]
+  ],
+  "registro_kaggle": {
+    "score": 0.8831,
+    "archivo_subido": "submission_06_xlmr_large_colab.csv",
+    "sha256": "91b4687cc82ea8cbfd7b3c70a359b5da9fdce2c8d1ddbae512d20b28d51aa3d1",
+    "fuente": "Captura de Kaggle aportada por el usuario",
+    "entorno": "Colab"
+  }
 }

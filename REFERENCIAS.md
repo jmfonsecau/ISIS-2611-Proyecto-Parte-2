@@ -6,8 +6,7 @@
 |---|---|---|---|
 | [paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) | `e8f8c211226b894fcb81acc59f3b34ba3efd5f42` | Encoder fijo con MLP en el modelo 1; fine-tuning con cabeza lineal en 2 y 3. | Apache-2.0 |
 | [FacebookAI/xlm-roberta-base](https://huggingface.co/FacebookAI/xlm-roberta-base) | `e73636d4f797dec63c3081bb6ed5c7b0bb3f2089` | Encoder y cabeza de clasificación; embeddings fijos en el modelo 4. | MIT |
-
-| [FacebookAI/xlm-roberta-large](https://huggingface.co/FacebookAI/xlm-roberta-large) | `c23d21b0620b635a76227c604d44e43a9f0ee389` | Encoder de 24 capas y cabeza de clasificación del modelo 6; embeddings fijos. | MIT |
+| [FacebookAI/xlm-roberta-large](https://huggingface.co/FacebookAI/xlm-roberta-large) | `c23d21b0620b635a76227c604d44e43a9f0ee389` | Encoder de 24 capas y cabeza de clasificación de los modelos 6 y 7; embeddings fijos. | MIT |
 
 Se incluyen `LICENSE_MODELOS_APACHE-2.0.txt` y `LICENSE_XLMR_MIT.txt`. Los paquetes conservan también los textos de licencia. Se usan encoders para clasificar, sin generación de texto.
 
@@ -23,7 +22,7 @@ La sustitución léxica se inspira en Wei y Zou (2019), [EDA](https://aclantholo
 
 ## Protocolo y reproducción
 
-Las variantes de desarrollo se construyen únicamente con la parte de ajuste. Validación y eval permanecen sin aumento. La época se elige por pérdida de validación. Después se inicializa otra red desde la base pública y se ajusta con todo train durante las épocas seleccionadas, manteniendo el horizonte original del calendario.
+Las variantes de desarrollo se construyen únicamente con la parte de ajuste. Validación y eval permanecen sin aumento. Los modelos 1 a 4 y 6 eligen la época por menor pérdida de validación. El modelo 7 elige por accuracy y usa la pérdida para desempatar. Después se inicializa otra red desde la base pública y se ajusta con todo train durante las épocas seleccionadas, manteniendo el horizonte original del calendario.
 
 Los resultados de desarrollo conservan predicciones por ID. Las métricas mostradas después del ajuste final provienen de esos registros, no de evaluar el modelo final sobre ejemplos aprendidos.
 
@@ -48,3 +47,9 @@ El modelo 6 prueba XLM-R large sin corpus adicional. Usa precisión mixta y [rec
 Antes del flujo actual en L4 se generaron tres CSV históricos: MiniLM fijo + MLP (0.70923), MiniLM sin aumento (0.85707) y MiniLM con aumento (0.85903). El segundo se ejecutó en MPS local y el tercero en T4 con versiones diferentes; esa comparación no aislaba únicamente el aumento. Los experimentos actuales 2 y 3 sí registran el mismo entorno e hiperparámetros.
 
 El notebook conserva la explicación del cambio a Colab y distingue estos scores. Los paquetes históricos publicados en Releases no sustituyen a los paquetes actuales `modelo_v1_*.pt`.
+
+## Séptimo experimento: criterio de selección
+
+Se conserva XLM-R large, revisión y licencia MIT ya documentadas para el modelo 6. El criterio se fijó antes de ejecutar: mayor accuracy, menor pérdida si hay empate y paciencia de dos épocas sin mejora. Se implementa en las funciones PyTorch del notebook; no se añadieron datos ni modelos externos.
+
+La época seleccionada fue la 4. Sus métricas de validación se guardaron antes de iniciar otra red desde la base pública y ajustar con las 20.466 etiquetas. La selección usa validación y no es una prueba independiente. El modelo 6 obtuvo 0.88310. El CSV `submission_07_xlmr_large_accuracy_colab.csv` del modelo 7 obtuvo **0.90078** en el leaderboard público, según la captura de Kaggle aportada por el grupo.
